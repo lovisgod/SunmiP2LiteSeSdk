@@ -799,7 +799,9 @@ class EmvPaymentHandler {
                 }
             }
             val bytes = len?.let { Arrays.copyOf(outData, it) }
+            println("yyyyyyyy::::: ${ByteUtil.bytes2HexStr(bytes)}")
             val tlvMap: Map<String, TLV> = TLVUtil.buildTLVMap(bytes)
+            println("tlvxxxxx:::::: ${tlvMap.values}")
             if (!TextUtils.isEmpty(Objects.requireNonNull<CharSequence?>(tlvMap[tag]?.value))) {
                 val tlvData: TLV? = tlvMap[tag]
                 println("tlv tag $tag::: ${tlvData?.value}")
