@@ -259,7 +259,7 @@ class EmvPaymentHandler {
     private fun importPinInputStatus(inputResult: Int) {
         LogUtil.e(Constant.TAG, "importPinInputStatus:$inputResult")
         try {
-//            emvOptV2?.importPinInputStatus(mPinType, inputResult)
+            emvOptV2?.importPinInputStatus(pinTypex, inputResult)
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
