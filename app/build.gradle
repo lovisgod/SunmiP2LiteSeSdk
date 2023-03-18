@@ -1,0 +1,119 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+//    id 'com.android.library'
+    id 'kotlin-kapt'
+    id 'kotlin-android-extensions'
+}
+
+android {
+    namespace 'com.lovisgod.sunmip2litese'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.lovisgod.sunmip2litese"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+
+        ndk {
+            abiFilters 'armeabi'
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+//            signingConfig signingConfigs.release
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    lint {
+        // If set to true (default), stops the build if errors are found.
+        abortOnError false
+    }
+}
+
+dependencies {
+
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    api 'com.pixplicity.easyprefs:EasyPrefs:1.10.0'
+
+    // retrofit xml converter
+    api("com.squareup.retrofit2:converter-simplexml:2.5.0") {
+        exclude group: 'stax', module: 'stax-api'
+        exclude group: 'stax', module: 'stax'
+    }
+
+    api "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.1"
+
+    // kotlin coroutine libs
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+
+
+    // SUNMI TERMINAL DEPENDENCIES
+
+    implementation files('libs/PayLib-release-1.4.72.aar')
+    implementation files('libs/PayLib-release-1.4.72-sources.jar')
+
+    implementation 'com.sunmi:sunmiui:1.1.27'
+    implementation 'com.sunmi:printerlibrary:1.0.7'
+
+    // PREFS
+
+    api 'com.pixplicity.easyprefs:EasyPrefs:1.10.0'
+
+    // EMV UTIL LIBS
+
+    api 'com.github.devicesandtokens:ISW_EMV_UTIL_LIB:0.1'
+
+
+
+    // retrofit xml converter
+    api("com.squareup.retrofit2:converter-simplexml:2.5.0") {
+        exclude group: 'stax', module: 'stax-api'
+        exclude group: 'stax', module: 'stax'
+    }
+
+
+    // retrofit
+
+    // retrofit http library
+    api "com.squareup.retrofit2:retrofit:2.5.0"
+    api "com.squareup.retrofit2:converter-scalars:2.5.0"
+
+    api 'com.squareup.okhttp3:logging-interceptor:3.8.1'
+    // retrofit gson converter
+    api "com.squareup.retrofit2:converter-gson:2.5.0"
+}
