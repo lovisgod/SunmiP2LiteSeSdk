@@ -1,7 +1,7 @@
 plugins {
-    id 'com.android.application'
+//    id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-//    id 'com.android.library'
+    id 'com.android.library'
     id 'kotlin-kapt'
     id 'kotlin-android-extensions'
 }
@@ -11,7 +11,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.lovisgod.sunmip2litese"
+//        applicationId "com.lovisgod.sunmip2litese"
         minSdk 21
         targetSdk 33
         versionCode 1
@@ -84,11 +84,12 @@ dependencies {
 
     // SUNMI TERMINAL DEPENDENCIES
 
-    implementation files('libs/PayLib-release-1.4.72.aar')
+//    implementation files('libs/PayLib-release-1.4.72.aar')
     implementation files('libs/PayLib-release-1.4.72-sources.jar')
 
     implementation 'com.sunmi:sunmiui:1.1.27'
     implementation 'com.sunmi:printerlibrary:1.0.7'
+    api project(':PayLib-release-1.4.72')
 
     // PREFS
 
