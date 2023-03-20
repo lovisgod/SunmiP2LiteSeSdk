@@ -75,19 +75,21 @@ public class CardUtil {
         cardCurrency.put("938", "SDG");
     }
 
-    public static CreditCard getEmvCardInfo() {
+    public static CreditCard getEmvCardInfo(String tlvDataString) {
         CreditCard creditCard = new CreditCard();
         EmvPaymentHandler handler = new EmvPaymentHandler();
 //        creditCard.setCardReadMode(mCardReadMode);
         try {
-            String cardsn = handler.getTlv(EmvTags.EMV_TAG_IC_PANSN);
+            String cardsn = handler.getTlvData(EmvTags.EMV_TAG_IC_PANSN, tlvDataString);
+            System.out.println("cardsn:::::" + cardsn);
             if (cardsn != null && !cardsn.isEmpty()) {
                 creditCard.setCardSequenceNumber(cardsn);
             }
 
-            String track2 = handler.getTlv(EmvTags.EMV_TAG_IC_TRACK2DATA);
+            String track2 = handler.getTlvData(EmvTags.EMV_TAG_IC_TRACK2DATA, tlvDataString);
+            System.out.println("track2:::::" + track2);
             if (track2 == null || track2.isEmpty()) {
-                track2 = handler.getTlv(EmvTags.M_TAG_IC_9F6B);
+                track2 = handler.getTlvData(EmvTags.M_TAG_IC_9F6B, tlvDataString);
             }
             if (track2 != null && track2.length() > 20) {
                 if (track2.endsWith("F") || track2.endsWith("f")) {

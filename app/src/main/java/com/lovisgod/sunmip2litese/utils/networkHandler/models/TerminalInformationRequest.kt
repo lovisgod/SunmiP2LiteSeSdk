@@ -77,7 +77,7 @@ data class TerminalInformationRequest (
               posEntryMode = "051"
               terminalId = terminalInfo.terminalCode
               transmissionDate = date
-              uniqueId = DeviceUtils.getDeviceSerialKozen().toString()
+              uniqueId = DeviceUtils.getDeviceSerialSunmi().toString()
               terminalType = deviceName.toUpperCase()
               posDataCode = if (haspin) "510101511344101" else "511101511344101"
               cellStationId = "00"
@@ -105,7 +105,7 @@ data class TerminalInformationRequest (
             posEntryMode = Constants.POS_ENTRY_MODE
             terminalId = terminalInfo.terminalCode
             transmissionDate = date
-            uniqueId = DeviceUtils.getDeviceSerialKozen().toString()
+            uniqueId = DeviceUtils.getDeviceSerialSunmi().toString()
             terminalType = deviceName.toUpperCase()
             posDataCode = Constants.POS_DATA_CODE
             cellStationId = "00"

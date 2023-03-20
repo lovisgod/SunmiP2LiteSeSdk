@@ -13,7 +13,7 @@ import java.util.*
 object EmvRequest {
 
      fun getCashout(terminalInfo: TerminalInfo, icc: RequestIccData, amount: Int) : String {
-         val serialId = DeviceUtils.getDeviceSerialKozen()
+         val serialId = DeviceUtils.getDeviceSerialSunmi()
 //         var dedicatedFileTag = ""
          var pinData = ""
 //         dedicatedFileTag=  """"<DedicatedFileName>${icc.DEDICATED_FILE_NAME}</DedicatedFileName>"""
@@ -32,7 +32,7 @@ object EmvRequest {
                                      <posGeoCode>00234000000000566</posGeoCode>
                                      <printerStatus>1</printerStatus>
                                      <terminalId>${terminalInfo.terminalCode}</terminalId>
-                                     <terminalType>HORIZON</terminalType>
+                                     <terminalType>SUNMI</terminalType>
                                      <transmissionDate>${DateUtils.universalDateFormat.format(Date())}</transmissionDate>
                                      <uniqueId>$serialId</uniqueId>
                                 </terminalInformation>
@@ -69,10 +69,10 @@ object EmvRequest {
                                 <fromAccount>${AccountType.Default.name}</fromAccount>
                                 <toAccount></toAccount>
                                 <minorAmount>${amount}</minorAmount>
-                                <receivingInstitutionId>506146</receivingInstitutionId>
+                                <receivingInstitutionId>627629</receivingInstitutionId>
                                 $pinData
                                 <keyLabel>${getKeyLabl(false)}</keyLabel>
-                                <destinationAccountNumber>6501440400</destinationAccountNumber>
+                                <destinationAccountNumber>2089430464</destinationAccountNumber>
                                  <extendedTransactionType>6103</extendedTransactionType>
 </transferRequest>"""
          return requestBody

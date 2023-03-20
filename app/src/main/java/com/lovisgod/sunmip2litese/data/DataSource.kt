@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.lovisgod.sunmip2litese.ui.uiState.PrintingState
 import com.lovisgod.sunmip2litese.ui.uiState.ReadCardStates
+import com.lovisgod.sunmip2litese.utils.DeviceUtils
 import com.lovisgod.sunmip2litese.utils.IswHpCodes
 import com.lovisgod.sunmip2litese.utils.models.TerminalInfo
 
@@ -84,6 +85,15 @@ class DataSource(val emvDataKeyManager: EmvDataKeyManager, val emvPaymentHandler
         } catch (e: Exception) {
             e.printStackTrace()
             IswHpCodes.GENERAL_EMV_EXCEPTION
+        }
+    }
+
+    fun getDeviceSerial(): String {
+        return try {
+            DeviceUtils.getDeviceSerialSunmi().toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ""
         }
     }
 }

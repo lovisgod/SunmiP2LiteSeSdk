@@ -8,5 +8,6 @@ data class AllUseCases(
    val emvPayUseCase: EmvPayUseCase,
    val printBitMapUseCase: PrintBitMapUseCase,
    val writePinkeyUseCase: WritePinkeyUseCase,
-   val loadMasterKeyUseCase: LoadMasterKeyUseCase
+   val loadMasterKeyUseCase: LoadMasterKeyUseCase,
+   val getDeviceSerialUseCase: GetDeviceSerialUseCase
 )

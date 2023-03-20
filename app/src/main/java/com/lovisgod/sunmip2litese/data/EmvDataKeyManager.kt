@@ -54,7 +54,7 @@ class EmvDataKeyManager {
 
     fun setEmvConfig(terminalInfo: TerminalInfo) {
         val terminalMap:Map<String?, String?> = mapOf(
-            "countryCode" to terminalInfo.terminalCode,
+            "countryCode" to terminalInfo.terminalCountryCode,
             "capability" to terminalInfo.terminalCapabilities
         )
         EmvUtil.setTerminalParam(terminalMap)

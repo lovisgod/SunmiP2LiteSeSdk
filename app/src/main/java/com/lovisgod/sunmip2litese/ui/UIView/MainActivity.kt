@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(), ReadCardStates, PrintingState {
     lateinit var useCases: AllUseCases
     var amount by Delegates.notNull<Int>()
      var respEntity: OnlineRespEntity = OnlineRespEntity().apply {
-         respCode = "12"
+         respCode = "00"
      }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity(), ReadCardStates, PrintingState {
                }
             }
         }
-        println("info:::: re")
+
         return respEntity
     }
 

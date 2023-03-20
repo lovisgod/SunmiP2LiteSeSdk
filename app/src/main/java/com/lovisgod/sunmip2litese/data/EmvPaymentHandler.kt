@@ -5,22 +5,25 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.RemoteException
 import android.text.TextUtils
+import com.isw.pinencrypter.Converter.GetPinBlock
 import com.lovisgod.sunmip2litese.SunmiLiteSeApplication
 import com.lovisgod.sunmip2litese.ui.uiState.CardScheme
 import com.lovisgod.sunmip2litese.ui.uiState.CardType
 import com.lovisgod.sunmip2litese.ui.uiState.PrintingState
 import com.lovisgod.sunmip2litese.ui.uiState.ReadCardStates
+import com.lovisgod.sunmip2litese.utils.*
 import com.lovisgod.sunmip2litese.utils.AidHelpers.EmvUtil.Constant
-import com.lovisgod.sunmip2litese.utils.ByteUtil
-import com.lovisgod.sunmip2litese.utils.CardUtil
-import com.lovisgod.sunmip2litese.utils.CheckCardCallbackV2Wrapper
-import com.lovisgod.sunmip2litese.utils.LogUtil
 import com.lovisgod.sunmip2litese.utils.models.iccData.EmvPinData
+import com.lovisgod.sunmip2litese.utils.models.iccData.ICCData
+import com.lovisgod.sunmip2litese.utils.models.iccData.RequestIccData
 import com.lovisgod.sunmip2litese.utils.models.iccData.getIccData
+import com.lovisgod.sunmip2litese.utils.models.pay.TransactionResultCode
 import com.lovisgod.sunmip2litese.utils.tlvHelper.TLV
 import com.lovisgod.sunmip2litese.utils.tlvHelper.TLVUtil
+import com.pixplicity.easyprefs.library.Prefs
 import com.sunmi.pay.hardware.aidl.AidlConstants
 import com.sunmi.pay.hardware.aidl.bean.CardInfo
+import com.sunmi.pay.hardware.aidlv2.AidlConstantsV2
 import com.sunmi.pay.hardware.aidlv2.AidlErrorCodeV2
 import com.sunmi.pay.hardware.aidlv2.bean.EMVCandidateV2
 import com.sunmi.pay.hardware.aidlv2.bean.PinPadConfigV2
@@ -47,6 +50,9 @@ class EmvPaymentHandler {
     var cardNoX = ""
     var isOnlinePin = true
     private var cardScheme: CardScheme = CardScheme.DEFAULT
+    private var carpin = ""
+    private var ksn  = ""
+    private var iccData: RequestIccData? = null
 
 
     fun initialize(context: Context) {
@@ -265,6 +271,40 @@ class EmvPaymentHandler {
         }
     }
 
+    private fun tryAgain() {
+        try {
+        checkCard()
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Import online process result data(eg: field 55 ) to emv process.
+     * if no date to import, set param tags and values as empty array
+     *
+     * @param status 0:online approval, 1:online denial, 2:online failed
+     */
+    private fun importOnlineProcessStatus(stat: Int) {
+        LogUtil.e(Constant.TAG, "importOnlineProcessStatus status:$stat")
+        try {
+            val tags = arrayOf("71", "72", "91", "8A", "89")
+            val values = arrayOf("", "", "", "", "")
+            val out = ByteArray(1024)
+            val len: Int? = emvOptV2?.importOnlineProcStatus(stat, tags, values, out)
+            if (len != null) {
+                if (len < 0) {
+                    LogUtil.e(Constant.TAG, "importOnlineProcessStatus error,code:$len")
+                } else {
+                    val bytes = Arrays.copyOf(out, len)
+                    val hexStr = ByteUtil.bytes2HexStr(bytes)
+                    LogUtil.e(Constant.TAG, "importOnlineProcessStatus outData:$hexStr")
+                }
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
 
     /**
      * EMV process callback
@@ -405,15 +445,30 @@ class EmvPaymentHandler {
          */
         @Throws(RemoteException::class)
         override fun onOnlineProc() {
+            val tlvDataString = getTlvDataString()
             LogUtil.e(Constant.TAG, "onOnlineProcess")
-            var iccdata = getIccData()
-            var creditCard = CardUtil.getEmvCardInfo()
-            iccdata.apply {
-                iccAsString = getTlvDataString()
+            iccData = getIccData(tlvDataString)
+            println("iccdata:::::: ${iccData?.APPLICATION_INTERCHANGE_PROFILE}")
+            var creditCard = CardUtil.getEmvCardInfo(tlvDataString)
+            creditCard.ksnData = ksn
+            creditCard.pin = carpin
+            iccData?.apply {
+                EMC_CARD_ = creditCard
+                iccAsString = tlvDataString
                 CARD_HOLDER_NAME = creditCard?.holderName.toString()
-                EMV_CARD_PIN_DATA = if (isOnlinePin) EmvPinData(creditCard.ksnData.toString(), creditCard.pin.toString()) else EmvPinData()
+                EMV_CARD_PIN_DATA = if (isOnlinePin) EmvPinData(creditCard.ksnData, creditCard.pin) else EmvPinData()
             }
-            this@EmvPaymentHandler.readCardStates?.sendTransactionOnline(iccdata)
+           var response  = this@EmvPaymentHandler.readCardStates?.sendTransactionOnline(iccData!!)
+            println("trans online res :: ${response?.respCode}")
+            if (response?.respCode?.toString()?.isNotEmpty()!! && response.respCode?.toString() == "00" )  {
+                println("called for suc")
+                importOnlineProcessStatus(0)
+            } else {
+                println("called for fail")
+                importOnlineProcessStatus(-1)
+            }
+            carpin = ""
+            ksn = ""
         }
 
         /**
@@ -437,30 +492,40 @@ class EmvPaymentHandler {
          * @param desc The corresponding message of this code
          */
         @Throws(RemoteException::class)
-        override fun onTransResult(code: Int, desc: String) {
-
-            LogUtil.e(Constant.TAG, "onTransResult code:$code desc:$desc")
-            LogUtil.e(
-                Constant.TAG,
-                "***************************************************************"
-            )
-            LogUtil.e(
-                Constant.TAG,
-                "****************************End Process************************"
-            )
-            LogUtil.e(
-                Constant.TAG,
-                "***************************************************************"
-            )
-            if (code == 0) {
-                // TRANS SUC
-
-            } else if (code == 4) {
-                // TRY AGAIN
-
-            } else {
-                // TRANS FAIL
-
+        override fun onTransResult(code: Int, desc: String?) {
+            try {
+                LogUtil.e(Constant.TAG, "onTransResult code:$code desc:$desc")
+                LogUtil.e(
+                    Constant.TAG,
+                    "***************************************************************"
+                )
+                LogUtil.e(
+                    Constant.TAG,
+                    "****************************End Process************************"
+                )
+                LogUtil.e(
+                    Constant.TAG,
+                    "***************************************************************"
+                )
+                if (code == 0) {
+                    // TRANS SUC
+                    checkAndRemoveCard()
+                    val isOfflineApproved = if(isOnlinePin) TransactionResultCode.APPROVED_BY_ONLINE else TransactionResultCode.APPROVED_BY_OFFLINE
+                    this@EmvPaymentHandler.readCardStates?.onEmvProcessed(iccData, isOfflineApproved)
+                } else if (code == 4) {
+                    // TRY AGAIN
+                    tryAgain()
+                } else {
+                    // TRANS FAIL
+                    checkAndRemoveCard()
+                    val isOfflineNotApproved = if(isOnlinePin) TransactionResultCode.DECLINED_BY_ONLINE else TransactionResultCode.DECLINED_BY_ONLINE
+                    this@EmvPaymentHandler.readCardStates?.onEmvProcessed(iccData, isOfflineNotApproved)
+                }
+                // clear ICc data
+                iccData = null
+            } catch (e: RemoteException) {
+                e.printStackTrace()
+                iccData = null
             }
         }
 
@@ -570,6 +635,30 @@ class EmvPaymentHandler {
             if (pinBlock != null) {
                 val hexStr: String = ByteUtil.bytes2HexStr(pinBlock)
                 LogUtil.e(Constant.TAG, "onConfirm pin block:$hexStr")
+
+//            mPinPad.dukptKsnIncrease(PinpadConst.DukptKeyIndex.DUKPT_KEY_INDEX_0);
+                val ksnCount: String = Constants.getNextKsnCounter()
+                val ksnString = Prefs.getString("KSN", "") + ksnCount
+
+                try {
+                    val pin = TripleDES.decrypt(
+                        cardNoX,
+                        HexUtil.bytesToHexString(pinBlock),
+                        "11111111111111111111111111111111"
+                    )
+                    println("pin is :::: $pin")
+                    val pinBlock = GetPinBlock(
+                        KeysUtilx.getIpekKsn(false).ipek,
+                        ksnString,
+                        pin,
+                        cardNoX
+                    )
+                    DeviceUtils.showText("info::::::: $pinBlock")
+                    carpin = pinBlock
+                    ksn = ksnString
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
                 importPinInputStatus(0)
             } else {
                 importPinInputStatus(2)
@@ -601,10 +690,10 @@ class EmvPaymentHandler {
 
 
 
-    private fun stopEmvProcess() {
+     fun stopEmvProcess() {
         println("this is called called called")
         try {
-
+            cancelCheckCard()
         } catch (e: RemoteException) {
             e.printStackTrace()
         } catch (e: NullPointerException) {
@@ -746,13 +835,10 @@ class EmvPaymentHandler {
             val keySet: Set<String> = map.keys
             for (key in keySet) {
                 val tlv = map[key]
-                sb.append(key)
-//                sb.append(":")
                 if (tlv != null) {
-                    val value = tlv.value
+                   val value = TLVUtil.revertToHexStr(tlv)
                     sb.append(value)
                 }
-//                sb.append("\n")
             }
             println("icc data is ::::: ${sb.toString()}")
             sb.toString()
@@ -778,38 +864,43 @@ class EmvPaymentHandler {
             } else if (status == AidlConstants.CardExistStatus.CARD_PRESENT) {
                 SunmiLiteSeApplication.basicOptV2?.buzzerOnDevice(1, 2750, 200, 0)
                 this.readCardStates?.onRemoveCard()
+//                checkAndRemoveCard()
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
     }
 
-    /** getCard number  */
-    fun getTlv(tag: String): String? {
-        LogUtil.e(Constant.TAG, "get tlv by tag")
+    private fun cancelCheckCard() {
         try {
-            val tagList = arrayOf(tag)
-            val outData = ByteArray(256)
-            val len: Int? =
-                emvOptV2?.getTlvList(AidlConstants.EMV.TLVOpCode.OP_NORMAL, tagList, outData)
-            if (len != null) {
-                if (len <= 0) {
-                    LogUtil.e(Constant.TAG, "getTlv error,code:$len")
-                    return ""
-                }
-            }
-            val bytes = len?.let { Arrays.copyOf(outData, it) }
-            println("yyyyyyyy::::: ${ByteUtil.bytes2HexStr(bytes)}")
-            val tlvMap: Map<String, TLV> = TLVUtil.buildTLVMap(bytes)
-            println("tlvxxxxx:::::: ${tlvMap.values}")
-            if (!TextUtils.isEmpty(Objects.requireNonNull<CharSequence?>(tlvMap[tag]?.value))) {
-                val tlvData: TLV? = tlvMap[tag]
-                println("tlv tag $tag::: ${tlvData?.value}")
-                return tlvData?.value
-            }
-        } catch (e: RemoteException) {
+            readCardOptV2?.cardOff(AidlConstants.CardType.NFC.getValue())
+            readCardOptV2?.cancelCheckCard()
+        } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
-        return ""
+    }
+
+
+    fun getTlvData(tag: String, tlvString: String): String {
+         return try {
+             val map: MutableMap<String, TLV> = TreeMap()
+             if (tlvString.isNotEmpty()) {
+                 val tlvMap = TLVUtil.buildTLVMap(tlvString)
+                 map.putAll(tlvMap)
+             }
+             val sb = StringBuilder()
+             val tlv = map[tag]
+             if (tlv != null) {
+                 sb.append(tlv.value)
+             }
+
+             println("icc data is ::::: ${sb.toString()}")
+             sb.toString()
+
+         } catch (e: java.lang.Exception) {
+             e.printStackTrace()
+             ""
+         }
+
     }
 }

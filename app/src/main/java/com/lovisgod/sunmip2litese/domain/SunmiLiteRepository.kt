@@ -17,4 +17,5 @@ class SunmiLiteRepository(val dataSource: DataSource) {
         isDukpt: Boolean = true, key: String = "", ksn: String = "") = dataSource.setPinKey(isDukpt, key, ksn)
     suspend fun pay(amount: Long, readCardStates: ReadCardStates, context: Context) = dataSource.pay(amount, readCardStates, context)
     suspend fun printBitMap(bitmap: Bitmap, printingState: PrintingState) = dataSource.printBitMap(bitmap, printingState)
+    suspend fun getDeviceSerial() = dataSource.getDeviceSerial()
 }

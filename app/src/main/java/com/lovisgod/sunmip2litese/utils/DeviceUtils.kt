@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.lovisgod.sunmip2litese.SunmiLiteSeApplication
+import com.sunmi.pay.hardware.aidl.AidlConstants
 import java.lang.reflect.Method
 
 
@@ -72,10 +74,10 @@ object DeviceUtils {
         return serialNumber
     }
 
-    fun getDeviceSerialKozen(): String? {
+    fun getDeviceSerialSunmi(): String? {
         var serialNumber: String?
         try {
-            serialNumber = ""
+            serialNumber = SunmiLiteSeApplication.basicOptV2?.getSysParam(AidlConstants.SysParam.SN)
             // If none of the methods above worked
             if (serialNumber == "") serialNumber = null
         } catch (e: Exception) {

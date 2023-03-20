@@ -25,7 +25,8 @@ class SunmiLiteContainer {
              emvPayUseCase = EmvPayUseCase(repository),
              printBitMapUseCase = PrintBitMapUseCase(repository),
              writePinkeyUseCase = WritePinkeyUseCase(repository),
-             loadMasterKeyUseCase = LoadMasterKeyUseCase(repository)
+             loadMasterKeyUseCase = LoadMasterKeyUseCase(repository),
+             getDeviceSerialUseCase = GetDeviceSerialUseCase(repository)
          )
     }
 

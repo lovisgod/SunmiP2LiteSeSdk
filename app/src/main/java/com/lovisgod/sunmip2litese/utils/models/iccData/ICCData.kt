@@ -61,48 +61,48 @@ internal val REQUEST_TAGS = listOf(
 )
 
 
-internal fun getIccData(): RequestIccData {
+internal fun getIccData(tlvDataString: String): RequestIccData {
     // set icc data using specified icc tags
     return RequestIccData(
-        TRANSACTION_AMOUNT = ICCData.TRANSACTION_AMOUNT.getTlv() ?: "",
-        ANOTHER_AMOUNT = ICCData.ANOTHER_AMOUNT.getTlv() ?: "000000000000",
-        APPLICATION_INTERCHANGE_PROFILE = ICCData.APPLICATION_INTERCHANGE_PROFILE.getTlv() ?: "",
-        APPLICATION_TRANSACTION_COUNTER = ICCData.APPLICATION_TRANSACTION_COUNTER.getTlv() ?: "",
-        CRYPTOGRAM_INFO_DATA = ICCData.CRYPTOGRAM_INFO_DATA.getTlv() ?: "",
-        AUTHORIZATION_REQUEST = ICCData.AUTHORIZATION_REQUEST.getTlv() ?: "",
-        CARD_HOLDER_VERIFICATION_RESULT = ICCData.CARD_HOLDER_VERIFICATION_RESULT.getTlv() ?: "",
-        ISSUER_APP_DATA = ICCData.ISSUER_APP_DATA.getTlv() ?: "",
-        TERMINAL_VERIFICATION_RESULT = ICCData.TERMINAL_VERIFICATION_RESULT.getTlv() ?: "",
+        TRANSACTION_AMOUNT = ICCData.TRANSACTION_AMOUNT.getTlv(tlvDataString) ?: "",
+        ANOTHER_AMOUNT = ICCData.ANOTHER_AMOUNT.getTlv(tlvDataString) ?: "000000000000",
+        APPLICATION_INTERCHANGE_PROFILE = ICCData.APPLICATION_INTERCHANGE_PROFILE.getTlv(tlvDataString) ?: "",
+        APPLICATION_TRANSACTION_COUNTER = ICCData.APPLICATION_TRANSACTION_COUNTER.getTlv(tlvDataString) ?: "",
+        CRYPTOGRAM_INFO_DATA = ICCData.CRYPTOGRAM_INFO_DATA.getTlv(tlvDataString) ?: "",
+        AUTHORIZATION_REQUEST = ICCData.AUTHORIZATION_REQUEST.getTlv(tlvDataString) ?: "",
+        CARD_HOLDER_VERIFICATION_RESULT = ICCData.CARD_HOLDER_VERIFICATION_RESULT.getTlv(tlvDataString) ?: "",
+        ISSUER_APP_DATA = ICCData.ISSUER_APP_DATA.getTlv(tlvDataString) ?: "",
+        TERMINAL_VERIFICATION_RESULT = ICCData.TERMINAL_VERIFICATION_RESULT.getTlv(tlvDataString) ?: "",
         // remove leading zero in currency and country codes
-        TRANSACTION_CURRENCY_CODE = ICCData.TERMINAL_COUNTRY_CODE.getTlv()?.substring(1) ?: "",
-        TERMINAL_COUNTRY_CODE = ICCData.TERMINAL_COUNTRY_CODE.getTlv()?.substring(1) ?: "",
+        TRANSACTION_CURRENCY_CODE = ICCData.TERMINAL_COUNTRY_CODE.getTlv(tlvDataString).substring(1) ?: "",
+        TERMINAL_COUNTRY_CODE = ICCData.TERMINAL_COUNTRY_CODE.getTlv(tlvDataString).substring(1) ?: "",
 
-        TERMINAL_TYPE = ICCData.TERMINAL_TYPE.getTlv() ?: "",
-        TERMINAL_CAPABILITIES = ICCData.TERMINAL_CAPABILITIES.getTlv() ?: "",
-        TRANSACTION_DATE = ICCData.TRANSACTION_DATE.getTlv() ?: "",
-        TRANSACTION_TYPE = ICCData.TRANSACTION_TYPE.getTlv() ?: "",
-        UNPREDICTABLE_NUMBER = ICCData.UNPREDICTABLE_NUMBER.getTlv() ?: "",
-        DEDICATED_FILE_NAME = ICCData.DEDICATED_FILE_NAME.getTlv() ?: "").apply {
+        TERMINAL_TYPE = ICCData.TERMINAL_TYPE.getTlv(tlvDataString) ?: "",
+        TERMINAL_CAPABILITIES = ICCData.TERMINAL_CAPABILITIES.getTlv(tlvDataString) ?: "",
+        TRANSACTION_DATE = ICCData.TRANSACTION_DATE.getTlv(tlvDataString) ?: "",
+        TRANSACTION_TYPE = ICCData.TRANSACTION_TYPE.getTlv(tlvDataString) ?: "",
+        UNPREDICTABLE_NUMBER = ICCData.UNPREDICTABLE_NUMBER.getTlv(tlvDataString) ?: "",
+        DEDICATED_FILE_NAME = ICCData.DEDICATED_FILE_NAME.getTlv(tlvDataString) ?: "").apply {
 
 
-        INTERFACE_DEVICE_SERIAL_NUMBER = ICCData.INTERFACE_DEVICE_SERIAL_NUMBER.getTlv() ?: ""
-        APP_VERSION_NUMBER = ICCData.APP_VERSION_NUMBER.getTlv() ?: ""
+        INTERFACE_DEVICE_SERIAL_NUMBER = ICCData.INTERFACE_DEVICE_SERIAL_NUMBER.getTlv(tlvDataString) ?: ""
+        APP_VERSION_NUMBER = ICCData.APP_VERSION_NUMBER.getTlv(tlvDataString) ?: ""
         CARD_HOLDER_NAME = ""?: ""
-        APP_PAN_SEQUENCE_NUMBER = ICCData.APP_PAN_SEQUENCE_NUMBER.getTlv() ?: ""
-        TRACK_2_DATA = ICCData.TRACK_2_DATA.getTlv() ?: ""
+        APP_PAN_SEQUENCE_NUMBER = ICCData.APP_PAN_SEQUENCE_NUMBER.getTlv(tlvDataString) ?: ""
+        TRACK_2_DATA = ICCData.TRACK_2_DATA.getTlv(tlvDataString) ?: ""
     }
 
 
 }
 
 
-fun ICCData.getTlv(): String{
+fun ICCData.getTlv(tlvDataString: String): String{
 //    val tlvParser = BerTlvParser()
 //    val tlvs = tlvParser.parse(data)
 //    var tlv = tlvs.find(BerTag("${this.tag}"))
-    EmvPaymentHandler().getTlv(this.tag)
-    var tlv = ""
-    if (tlv != null) {
+    var tlv = EmvPaymentHandler().getTlvData(this.tag, tlvDataString)
+    if (tlv.isNotEmpty()) {
+        println("tlv data:::: ${tlv}")
        return tlv
     } else {
         return ""
