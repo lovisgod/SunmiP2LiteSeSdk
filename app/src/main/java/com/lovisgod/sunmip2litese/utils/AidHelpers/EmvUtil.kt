@@ -229,8 +229,8 @@ object EmvUtil {
             val emvTermParam = EmvTermParamV2()
             emvTermParam.countryCode = map["countryCode"]
             emvTermParam.capability = map["capability"]
-            //            emvTermParam.currencyCode = map.get("5F2A");
-//            emvTermParam.currencyExp = map.get("5F36");
+            emvTermParam.currencyCode = map.get("currencyCode");
+            emvTermParam.currencyExp = map.get("currencyExponent");
             val result = emvOptV2!!.setTerminalParam(emvTermParam)
             LogUtil.e("Terminal Param", "setTerminalParam result:$result")
         } catch (e: Exception) {

@@ -74,7 +74,7 @@ internal fun getIccData(tlvDataString: String): RequestIccData {
         ISSUER_APP_DATA = ICCData.ISSUER_APP_DATA.getTlv(tlvDataString) ?: "",
         TERMINAL_VERIFICATION_RESULT = ICCData.TERMINAL_VERIFICATION_RESULT.getTlv(tlvDataString) ?: "",
         // remove leading zero in currency and country codes
-        TRANSACTION_CURRENCY_CODE = ICCData.TERMINAL_COUNTRY_CODE.getTlv(tlvDataString).substring(1) ?: "",
+        TRANSACTION_CURRENCY_CODE = ICCData.TRANSACTION_CURRENCY_CODE.getTlv(tlvDataString).substring(1) ?: "",
         TERMINAL_COUNTRY_CODE = ICCData.TERMINAL_COUNTRY_CODE.getTlv(tlvDataString).substring(1) ?: "",
 
         TERMINAL_TYPE = ICCData.TERMINAL_TYPE.getTlv(tlvDataString) ?: "",
