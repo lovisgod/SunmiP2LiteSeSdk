@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity(), ReadCardStates, PrintingState {
         startpay.setOnClickListener {
             GlobalScope.launch {
                 withContext(Dispatchers.IO) {
-                    amount = 100
+                    amount = 1000
                     useCases.emvPayUseCase(amount.toLong(), this@MainActivity, this@MainActivity)
                 }
             }

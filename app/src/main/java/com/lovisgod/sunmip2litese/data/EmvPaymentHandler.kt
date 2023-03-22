@@ -583,8 +583,6 @@ class EmvPaymentHandler {
             containerContent: Array<String>
         ) {
             LogUtil.e(Constant.TAG, "onDataStorageProc,")
-            //此回调为Dpas2.0专用
-            //根据需求配置tag及values
             val tags = arrayOfNulls<String>(0)
             val values = arrayOfNulls<String>(0)
             emvOptV2?.importDataStorage(tags, values)
